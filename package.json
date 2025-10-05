@@ -1,23 +1,30 @@
 {
-  "name": "clj-braitenberg-vehicles-2",
-  "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "index.js",
+  "name": "frontend",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "shadow-cljs watch app",
+    "release": "shadow-cljs release app",
+    "test-karma": "shadow-cljs compile test-karma && karma start --single-run"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.25.6",
+    "@babel/core": "^7.25.2",
+    "@babel/plugin-transform-react-jsx": "^7.25.2",
+    "@svgr/cli": "^8.1.0",
+    "karma": "^6.4.4",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-cljs-test": "^0.1.0",
+    "react-refresh": "^0.14.2",
+    "shadow-cljs": "2.28.15"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@js-joda/core": "^5.6.3",
+    "@mui/icons-material": "^6.1.1",
+    "@mui/material": "^6.1.1",
     "matter-js": "^0.20.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-refresh": "^0.18.0"
-  },
-    "devDependencies": {
-      "use-sync-external-store": "^1.2.2",
-      "@js-joda/core": "^5.6.3",
-      "shadow-cljs": "^3.2.1"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "use-sync-external-store": "^1.2.2"
   }
 }

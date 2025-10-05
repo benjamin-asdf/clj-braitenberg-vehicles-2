@@ -1,1 +1,3 @@
-(ns user)
+(ns user
+  (:require [backend.migrations]
+            [migratus.core :as migratus]))

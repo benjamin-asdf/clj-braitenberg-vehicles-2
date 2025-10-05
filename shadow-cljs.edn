@@ -1,5 +1,5 @@
 {:deps {:aliases [:shadow-cljs :frontend]}
- :dev-http {8080 ["public" "target/dev/public"]
+ :dev-http {8080 "public"
             8081 "target/browser-test"}
  :builds {:app
           {:target :browser

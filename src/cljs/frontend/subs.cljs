@@ -1,7 +1,7 @@
 (ns frontend.subs
   (:require [re-frame.core :as rf]))
 
-#_(rf/reg-sub ::todos
+(rf/reg-sub ::todos
   :<- [:http/body [:todos]]
   (fn [todos _]
     (sort-by :id todos)))
