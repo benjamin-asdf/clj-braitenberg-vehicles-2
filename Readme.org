@@ -28,6 +28,7 @@ npx shadow-cljs release app
   cp target/release/public/js/* ../disco-disco-popp-popp
 #+end_src
 
+- manual
 
 * Inspiration
 
