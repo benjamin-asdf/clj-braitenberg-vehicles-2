@@ -8,7 +8,7 @@ var Engine = Matter.Engine,
     Bodies = Matter.Bodies,
     Composite = Matter.Composite;
 
-function matter_setup() {
+function matter_setup(width, height) {
     // create an engine
     var engine = Engine.create();
     
@@ -98,8 +98,8 @@ function matter_setup() {
         element: document.getElementById('matter-canvas'),
         engine: engine,
         options: {
-            width: 800,
-            height: 600,
+            width: width,
+            height: height,
             wireframes: false // Show actual colors
         }
     });
@@ -116,7 +116,7 @@ function matter_setup() {
 
     function addGround() {
 
-            var ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
+            var ground = Bodies.rectangle(100, height - 20, width * 2, 20, { isStatic: true });
     
     // Create a pyramid at position (300, 550) with 10 columns and 10 rows
 //    var pyramid = makePyramid(300, 550, 10, 10, 30);

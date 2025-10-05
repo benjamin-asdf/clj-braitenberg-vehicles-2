@@ -50,7 +50,10 @@
 
 (defonce setup!
   (memoize (fn []
-             (js/window.matter_setup)
+             (js/window.matter_setup
+              (.. js/window -innerWidth)
+              (.. js/window -innerHeight)
+              )
              (js/window.addGround)
              (js/window.createPyramid 200 (rand-nth [0 100 200 -100
                                                      -200])
@@ -70,7 +73,7 @@
            [id
             (js/setInterval
              (fn [] (color-change-all!))
-             300)
+             500)
             ]
            (fn []
              (js/clearInterval id)
@@ -83,12 +86,13 @@
            [id
             (js/setInterval
              (fn []
-               (when (rand-nth [false false false true])
+               (when (rand-nth [false false false
+                                false
+                                false true])
                  (color-cycle-white!)))
-             100)]
+             200)]
            (fn []
-             (js/clearInterval id)
-             )))
+             (js/clearInterval id))))
      [])
 
 
@@ -144,38 +148,49 @@
 
 
     ($ :<>
-       ($ :div {:id "matter-canvas"})
-       ($ button {:on-click (fn []
+       ($ :div
+          {:id "matter-canvas"
+           :style
+           {:padding "0px"
+            :position "absolute"
+            :top "0px"
+            :left "0px"
+            :min-width "100vw"
+            :min-height "100vh"
+            :z-index "-1"}
+           })
+       #_($ button {:on-click (fn []
 
-                              (js/window.addBox
-                               (js/window.makeBox 400 200 40 40)))} "box!")
-       ($ button {:on-click
+                                (js/window.addBox
+                                 (js/window.makeBox 400 200 40 40)))} "box!")
+       #_($ button {:on-click
 
-                  (fn []
-                    (js/window.createPyramid
-                     200
-                     (rand-nth [0 100 200 -100 -200]) 500 500))}
-          "pyramid!")
+                    (fn []
+                      (js/window.createPyramid
+                       200
+                       (rand-nth [0 100 200 -100 -200]) 500 500))}
+            "pyramid!")
 
-       ($ button {:on-click
-                  (fn []
-                    (js/window.addGround))}
-          "ground")
+       #_($ button {:on-click
+                    (fn []
+                      (js/window.addGround))}
+            "ground")
 
-       ($ button {:on-click
-                  (fn []
-                    (js/window.changeAllBodiesToColor
-                     (rand-nth [
-                                "#00ff00"
-                                "#0000ff"
-                                "#ffff00"
-                                "#00ffff"])))}
-          "colors")
+       #_($ button
+            {:on-click
+             (fn []
+               (js/window.changeAllBodiesToColor
+                (rand-nth ["#00ff00" "#0000ff" "#ffff00" "#00ffff"])))}
+            "colors")
 
-       ($ button {:on-click
-                  (fn []
-                    (js/window.resetEngine))}
-          "clear"))))
+       #_($ button {:on-click
+                    (fn []
+                      (js/window.resetEngine))}
+            "clear")
+
+
+
+       )))
 
 
 (def theme (createTheme

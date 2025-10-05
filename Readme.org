@@ -2,8 +2,31 @@
 
 
 
+* dev
+
+- clj repl with alias set, see dev.el
 
 
+- shadow watch
+
+#+begin_src
+npx shadow-cljs watch app
+#+end_src
+
+
+
+* build
+
+#+begin_src
+npx shadow-cljs release app
+#+end_src
+
+
+** disco-disco-popp-popp
+
+#+begin_src
+  cp target/release/public/js/* ../disco-disco-popp-popp
+#+end_src
 
 
 * Inspiration
