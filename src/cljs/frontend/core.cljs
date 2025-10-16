@@ -16,185 +16,97 @@
             [frontend.subs :as s]
             [frontend.uix.hooks :refer [use-subscribe]]
             [re-frame.core :as rf]
+            [quil.core :as q :include-macros true]
+            [quil.middleware :as m]
             [uix.core :as uix :refer [$ defui]]
             [uix.dom]
-            ["/matter_demo.js"]))
+            ["matter-js" :refer [Engine Render Runner Bodies Composite]]
+
+            [quill-matter-js.engine :as en]
+            [quill-matter-js.renderer :as re]
+
+            ;; ["matter-js"]
+            ;; ["/matter_demo.js"]
+            ))
 
 
-(let [colors (atom (cycle
-                     ;;     const colors = ['#000000', '#ffffff',
-                     ;;     '#00ffff', '#ff8800'];
-                    ["#ff0000" "#00ff00" "#ffff00"
-                      "#00ffff"]))
-      next-color! (fn []
-                    (let [c (first @colors)]
-                      (swap! colors next)
-                      c))]
-  (defn color-change-all!
-    []
-    (js/window.changeAllBodiesToColor (next-color!)
-                                      ;; (rand-nth ["#00ff00"
-                                      ;; "#0000ff" "#ffff00"
-                                      ;; "#00ffff"])
-    )))
+(defn inspect-body [body]
+  (clj->js
+    {:id (.-id body)
+     :type (.-type body)
+     :label (.-label body)
+     :position [(.. body -position -x) (.. body -position -y)]
+     :bounds {:min [(.. body -bounds -min -x) (.. body -bounds -min -y)]
+              :max [(.. body -bounds -max -x) (.. body -bounds -max -y)]}
+     :vertices-count (.-length (.-vertices body))}))
 
-(defn color-cycle-white!
-    []
-  (js/window.changeAllBodiesToColor "#ffffff"))
+(def frame-rate 60)
 
+(defn update-state [state]
+  (->
+   state
+   (update :mj/engine en/update (/ 1000 frame-rate))))
 
-(defui button [{:keys [on-click children]}]
-  ($ :button.btn {:style {:padding "30px"}
-                  :on-click on-click}
-     children))
+(defn add-box [engine]
+  (let [boxA (Bodies.rectangle 400 200 80 80)]
+    (set! boxA.qtype "rect")
+    (Composite.add (.. engine -world) #js [boxA])))
 
-(defonce setup!
-  (memoize (fn []
-             (js/window.matter_setup
-              (.. js/window -innerWidth)
-              (.. js/window -innerHeight)
-              )
-             (js/window.addGround)
-             (js/window.createPyramid 200 (rand-nth [0 100 200 -100
-                                                     -200])
-                                      500 500))))
+(defn add-bodies
+  [engine bodies]
+  (Composite.add (.. engine -world) (clj->js bodies)))
+
+(defn ground []
+  ;;             var ground = Bodies.rectangle(100, height - 20, width * 2, 20, { isStatic: true });
+  (let [ground (Bodies.rectangle 300 590 600 20 #js {:isStatic true})]
+    (set! ground.qtype "rect")
+    ground))
+
+(defn setup
+  []
+  (q/frame-rate frame-rate)
+  (let [e (en/engine nil)]
+    (add-box e)
+    (add-bodies e [(ground)])
+    {:mj/engine e}))
+
+(defn pulse [low high rate]
+  (let [diff (- high low)
+        half (/ diff 2)
+        mid (+ low half)
+        s (/ (q/millis) 1000.0)
+        x (q/sin (* s (/ 1.0 rate)))]
+    (+ mid (* x half))))
+
+(defn draw-state [state]
+  (q/no-stroke)
+  (q/background 255)
+  (q/fill 200 0 0)
+  (re/render (:mj/engine state) {}))
+
+(defn sketch [host]
+  (q/sketch
+   :host host
+   :size [600 600]
+   :setup #'setup
+   :update #'update-state
+   :draw #'draw-state
+   :features [:keep-on-top]
+   :middleware [m/fun-mode]))
 
 (defui app []
-  (let [[state set-state!] (uix.core/use-state 0)]
-    (uix/use-effect
-     (fn []
-       (setup!))
-     [])
-
-
-    (uix/use-effect
-     (fn []
-       (let
-           [id
-            (js/setInterval
-             (fn [] (color-change-all!))
-             500)
-            ]
-           (fn []
-             (js/clearInterval id)
-             )))
-     [])
-
-    (uix/use-effect
-     (fn []
-       (let
-           [id
-            (js/setInterval
-             (fn []
-               (when (rand-nth [false false false
-                                false
-                                false true])
-                 (color-cycle-white!)))
-             200)]
-           (fn []
-             (js/clearInterval id))))
-     [])
-
-
-    (uix/use-effect (fn []
-                      (let [id (js/setInterval
-                                (fn [] (js/window.applyRandomForce 0.1))
-                                10)]
-                        (fn [] (js/clearInterval id))))
-                    [])
-
-
-    (uix/use-effect
-     (fn []
-       (let
-           [id
-            (js/setInterval
-             (fn []
-               (js/window.setAllCirclesRadius
-                (rand-nth [10 20 30 40 50])
-                )
-               ;; (js/window.applyRandomForce 0.1)
-               )
-             100)]
-           (fn []
-             (js/clearInterval id)
-             )))
-     [])
-
-
-    (uix/use-effect
-     (fn []
-       (let
-           [id
-            (js/setInterval
-             (fn []
-               (when (rand-nth [false false false
-                                false
-                                false
-                                false
-                                false
-                                false
-                                false true])
-                 (js/window.createPyramid 200 (rand-nth [0 100 200 -100
-                                                         -200])
-                                          500 500))
-               )
-             200)]
-           (fn []
-             (js/clearInterval id)
-             )))
-     [])
-
-
-
-    ($ :<>
-       ($ :div
-          {:id "matter-canvas"
-           :style
-           {:padding "0px"
-            :position "absolute"
-            :top "0px"
-            :left "0px"
-            :min-width "100vw"
-            :min-height "100vh"
-            :z-index "-1"}
-           })
-       #_($ button {:on-click (fn []
-
-                                (js/window.addBox
-                                 (js/window.makeBox 400 200 40 40)))} "box!")
-       #_($ button {:on-click
-
-                    (fn []
-                      (js/window.createPyramid
-                       200
-                       (rand-nth [0 100 200 -100 -200]) 500 500))}
-            "pyramid!")
-
-       #_($ button {:on-click
-                    (fn []
-                      (js/window.addGround))}
-            "ground")
-
-       #_($ button
-            {:on-click
-             (fn []
-               (js/window.changeAllBodiesToColor
-                (rand-nth ["#00ff00" "#0000ff" "#ffff00" "#00ffff"])))}
-            "colors")
-
-       #_($ button {:on-click
-                    (fn []
-                      (js/window.resetEngine))}
-            "clear")
-
-
-
-       )))
-
+  (let [!host (uix/use-ref)
+        _
+        (uix/use-effect
+         (fn []
+           (sketch (.-current !host)))
+         [])]
+    ($ :div
+       {:ref !host
+        :style {:padding "30px"}})))
 
 (def theme (createTheme
-             #js {:components #js {:Checkbox #js {}}}))
+            #js {:components #js {:Checkbox #js {}}}))
 
 (defui app-wrapper []
   ($ ThemeProvider
@@ -213,14 +125,32 @@
   (uix.dom/render-root ($ app-wrapper) root))
 
 (defn ^:export init []
-  (render)
-
-
-
-  )
+  (render))
 
 (comment
 
+
+  (js/console.log (inspect-body (first bodies)))
+  (js/Object.getOwnPropertyNames (first bodies))
+  (.-type (first bodies))
+
+
+  (js/console.log (.-parts (first bodies)))
+  (js/console.log (first (.-parts (first bodies))))
+
+
+  (.- (first bodies) qtype)
+
+  ;; #js
+  ;; ["id" "type" "label" "parts" "plugin" "angle" "vertices" "position"
+  ;;  "force" "torque" "positionImpulse" "constraintImpulse"
+  ;;  "totalContacts" "speed" "angularSpeed" "velocity" "angularVelocity"
+  ;;  "isSensor" "isStatic" "isSleeping" "motion" "sleepThreshold"
+  ;;  "density" "restitution" "friction" "frictionStatic" "frictionAir"
+  ;;  "collisionFilter" "slop" "timeScale" "render" "events" "bounds"
+  ;;  "chamfer" "circleRadius" "positionPrev" "anglePrev" "parent" "axes"
+  ;;  "area" "mass" "inertia" "deltaTime" "_original" "inverseInertia"
+  ;;  "inverseMass" "sleepCounter"]
 
 
   )

@@ -18,4 +18,7 @@
           :test-karma
           {:target :karma
            :output-to "target/karma/test.js"
-           :ns-regexp "-test$"}}}
+           :ns-regexp "-test$"}}
+ :nrepl
+ {:port 7011
+  :middleware [cider.nrepl/cider-middleware]}}
